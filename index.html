@@ -693,61 +693,67 @@ function showUserForm(mode, user = {}, docId = null) {
     </script>
 
     <script>
-        let loginUserState = null;
+let loginUserState = null;
 
-        // Fungsi untuk menampilkan halaman yang sesuai
-        function showPage(page) {
-            document.getElementById('loginpage').style.display = page === 'login' ? 'block' : 'none';
-            document.getElementById('dashboardpage').style.display = page === 'dashboard' ? 'block' : 'none';
+// Fungsi untuk menampilkan halaman yang sesuai
+function showPage(page) {
+    document.getElementById('loginpage').style.display = page === 'login' ? 'block' : 'none';
+    document.getElementById('dashboardpage').style.display = page === 'dashboard' ? 'block' : 'none';
+}
+
+// Menangani proses login saat form disubmit
+document.getElementById("loginForm").addEventListener("submit", function(event){
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginButton');
+    const btnText = document.getElementById('buttonText');
+    const spinner = document.getElementById('buttonSpinner');
+
+    btn.disabled = true;
+    btnText.innerText = 'Memproses...';
+    spinner.classList.remove('hidden');
+    document.getElementById('error').innerText = '';
+
+    fetch('http://103.174.114.120:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => res.json())
+    .then(function(response) {
+        btn.disabled = false;
+        btnText.innerText = 'Login';
+        spinner.classList.add('hidden');
+
+        if (response.status === 'ok') {
+            loginUserState = response;
+            document.getElementById('userLabel').innerText = `${response.nama} (${response.tipe_user})`;
+            showMenuForRole(response.tipe_user);
+            showPage('dashboard');
+            renderDashboardBox();
+            document.querySelectorAll('#mainMenu a').forEach(l => l.classList.remove('bg-blue-900', 'font-bold'));
+            document.querySelector('#mainMenu a[data-menu="beranda"]').classList.add('bg-blue-900', 'font-bold');
+        } else {
+            document.getElementById('error').innerText = response.message;
         }
+    })
+    .catch(function(error) {
+        btn.disabled = false;
+        btnText.innerText = 'Login';
+        spinner.classList.add('hidden');
+        document.getElementById('error').innerText = 'Gagal terhubung ke server.';
+    });
+});
 
-        // Menangani proses login saat form disubmit
-        document.getElementById("loginForm").addEventListener("submit", function(event){
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginButton');
-            const btnText = document.getElementById('buttonText');
-            const spinner = document.getElementById('buttonSpinner');
-            
-            btn.disabled = true;
-            btnText.innerText = 'Memproses...';
-            spinner.classList.remove('hidden');
-            document.getElementById('error').innerText = '';
-
-            google.script.run.withSuccessHandler(function(response) {
-                  btn.disabled = false;
-                  btnText.innerText = 'Login';
-                  spinner.classList.add('hidden');
-                  
-                  if (response.status === 'ok') {
-                    loginUserState = response;
-                    document.getElementById('userLabel').innerText = `${response.nama} (${response.tipe_user})`;
-                    showMenuForRole(response.tipe_user);
-                    showPage('dashboard');
-                    renderDashboardBox(); // <-- Tambahkan ini
-                    // (Highlight menu Beranda jika perlu)
-                    document.querySelectorAll('#mainMenu a').forEach(l => l.classList.remove('bg-blue-900', 'font-bold'));
-                    document.querySelector('#mainMenu a[data-menu="beranda"]').classList.add('bg-blue-900', 'font-bold');
-                }
-                else {
-                    document.getElementById('error').innerText = response.message;
-                }
-            }).checkLogin(email, password);
-        });
-
-        // Menangani proses logout
-        function logoutUser() {
-            if (loginUserState) {
-                google.script.run.logLogout(loginUserState.email, loginUserState.nama);
-            }
-            loginUserState = null;
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
-            showPage('login');
-        }
-    </script>
-
+// Menangani proses logout
+function logoutUser() {
+    loginUserState = null;
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+    showPage('login');
+}
+</script>
     
     <!-- ...Akhir halaman sebelum </body> -->
     <!-- Toggle Dark/Light Theme -->
