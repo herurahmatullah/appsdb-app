@@ -492,9 +492,13 @@ function renderUserTable() {
     `;
 
     // Fetch user dari Apps Script
-    google.script.run.withSuccessHandler(function(users) {
-        let rows = "";
-        users.forEach((user, idx) => {
+    fetch('https://herurahmatullah.my.id/users')
+    .then(res => res.json())
+    .then(function(response) {
+        if(response.status === "ok") {
+            let users = response.users;
+            let rows = "";
+            users.forEach((user, idx) => {
             rows += `
             <tr class="border-b hover:bg-blue-50">
                 <td class="px-3 py-2 text-center">${idx + 1}</td>
