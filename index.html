@@ -530,6 +530,103 @@ function renderPengaturan(selected = '') {
     }
 }
 
+    function renderAksesMenuTable() {
+    document.getElementById('mainContent').innerHTML = `
+    <div class="bg-white rounded-xl shadow-md p-4">
+        <div class="text-2xl font-bold text-gray-800 text-center mb-2">Akses Menu</div>
+        <div class="overflow-auto rounded">
+            <table class="min-w-full text-sm text-left">
+                <thead>
+                    <tr class="bg-blue-50 border-b">
+                        <th class="px-3 py-2 text-center">No.</th>
+                        <th class="px-3 py-2">Email</th>
+                        <th class="px-3 py-2 text-center">ASN</th>
+                        <th class="px-3 py-2 text-center">PNS</th>
+                        <th class="px-3 py-2 text-center">CPNS</th>
+                        <th class="px-3 py-2 text-center">PPPK</th>
+                        <th class="px-3 py-2 text-center">Pangkat</th>
+                        <th class="px-3 py-2 text-center">Gaji Berkala</th>
+                        <th class="px-3 py-2 text-center">Mutasi</th>
+                        <th class="px-3 py-2 text-center">Pensiun</th>
+                        <th class="px-3 py-2 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="aksesMenuTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    `;
+        
+    fetch('https://herurahmatullah.my.id/akses_menu')
+    .then(res => res.json())
+    .then(response => {
+        if(response.status === "ok") {
+            const data = response.data;
+            let rows = '';
+            data.forEach((row, idx) => {
+                const isAdmin = row.tipe_user === 'admin';
+                function checked(val) { return val ? 'checked' : ''; }
+                function disabled() { return isAdmin ? 'disabled' : ''; }
+                rows += `
+                <tr class="border-b hover:bg-blue-50">
+                    <td class="px-3 py-2 text-center">${idx + 1}</td>
+                    <td class="px-3 py-2">${row.email}</td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="asn" ${checked(row.asn)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pns" ${checked(row.pns)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="cpns" ${checked(row.cpns)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pppk" ${checked(row.pppk)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pangkat" ${checked(row.pangkat)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="gaji_berkala" ${checked(row.gaji_berkala)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="mutasi" ${checked(row.mutasi)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pensiun" ${checked(row.pensiun)} ${disabled()}></td>
+                    <td class="px-3 py-2 text-center">
+                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${row.email}" ${isAdmin ? 'disabled' : ''}>Ubah</button>
+                    </td>
+                </tr>
+                `;
+            });
+            document.getElementById('aksesMenuTableBody').innerHTML = rows;
+
+            // Event untuk "Ubah" button: enable semua checkbox (edit mode)
+            document.querySelectorAll('.editAksesBtn').forEach(btn => {
+                btn.onclick = function() {
+                    const email = this.getAttribute('data-email');
+                    const inputs = document.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
+                    inputs.forEach(cb => cb.disabled = false);
+                    this.innerText = "Simpan";
+                    this.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    this.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                    this.onclick = function() {
+                        let akses = {};
+                        inputs.forEach(cb => {
+                            akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
+                            cb.disabled = true;
+                        });
+                        fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(akses)
+                        })
+                        .then(res => res.json())
+                        .then(response => {
+                            if(response.status === 'ok') {
+                                renderAksesMenuTable();
+                            } else {
+                                alert("Gagal update akses menu!");
+                            }
+                        });
+                    }
+                };
+            });
+        } else {
+            document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal memuat data akses menu</td></tr>';
+        }
+    })
+    .catch(() => {
+        document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal terhubung ke server</td></tr>';
+    });
+}
+    
 function renderUserTable() {
     document.getElementById('mainContent').innerHTML = `
     <div class="bg-white rounded-xl shadow-md p-4">
@@ -703,105 +800,7 @@ function showUserForm(mode, user = {}, docId = null) {
     }
     // Aktifkan menu pada login sukses
     // Panggil: showMenuForRole(response.tipe_user);
-    function renderAksesMenuTable() {
-    document.getElementById('pengaturanContent').innerHTML = `
-    <div class="bg-white rounded-xl shadow-md p-4">
-        <div class="text-2xl font-bold text-gray-800 text-center mb-2">Akses Menu</div>
-        <div class="overflow-auto rounded">
-            <table class="min-w-full text-sm text-left">
-                <thead>
-                    <tr class="bg-blue-50 border-b">
-                        <th class="px-3 py-2 text-center">No.</th>
-                        <th class="px-3 py-2">Email</th>
-                        <th class="px-3 py-2 text-center">ASN</th>
-                        <th class="px-3 py-2 text-center">PNS</th>
-                        <th class="px-3 py-2 text-center">CPNS</th>
-                        <th class="px-3 py-2 text-center">PPPK</th>
-                        <th class="px-3 py-2 text-center">Pangkat</th>
-                        <th class="px-3 py-2 text-center">Gaji Berkala</th>
-                        <th class="px-3 py-2 text-center">Mutasi</th>
-                        <th class="px-3 py-2 text-center">Pensiun</th>
-                        <th class="px-3 py-2 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="aksesMenuTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-    `;
-
-    fetch('https://herurahmatullah.my.id/akses_menu')
-    .then(res => res.json())
-    .then(response => {
-        if(response.status === "ok") {
-            const data = response.data;
-            let rows = '';
-            data.forEach((row, idx) => {
-                const isAdmin = row.tipe_user === 'admin';
-                function checked(val) { return val ? 'checked' : ''; }
-                function disabled() { return isAdmin ? 'disabled' : ''; }
-                rows += `
-                <tr class="border-b hover:bg-blue-50">
-                    <td class="px-3 py-2 text-center">${idx + 1}</td>
-                    <td class="px-3 py-2">${row.email}</td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="asn" ${checked(row.asn)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pns" ${checked(row.pns)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="cpns" ${checked(row.cpns)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pppk" ${checked(row.pppk)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pangkat" ${checked(row.pangkat)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="gaji_berkala" ${checked(row.gaji_berkala)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="mutasi" ${checked(row.mutasi)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pensiun" ${checked(row.pensiun)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center">
-                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${row.email}" ${isAdmin ? 'disabled' : ''}>Ubah</button>
-                    </td>
-                </tr>
-                `;
-            });
-            document.getElementById('aksesMenuTableBody').innerHTML = rows;
-
-            // Event untuk "Ubah" button: enable semua checkbox (edit mode)
-            document.querySelectorAll('.editAksesBtn').forEach(btn => {
-                btn.onclick = function() {
-                    const email = this.getAttribute('data-email');
-                    const inputs = document.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
-                    inputs.forEach(cb => cb.disabled = false);
-                    this.innerText = "Simpan";
-                    this.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    this.classList.add('bg-blue-500', 'hover:bg-blue-600');
-                    this.onclick = function() {
-                        // Kumpulkan nilai checkbox
-                        let akses = {};
-                        inputs.forEach(cb => {
-                            akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
-                            cb.disabled = true;
-                        });
-                        // Kirim PUT ke API akses_menu
-                        fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(akses)
-                        })
-                        .then(res => res.json())
-                        .then(response => {
-                            if(response.status === 'ok') {
-                                renderAksesMenuTable();
-                            } else {
-                                alert("Gagal update akses menu!");
-                            }
-                        });
-                    }
-                };
-            });
-        } else {
-            document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal memuat data akses menu</td></tr>';
-        }
-    })
-    .catch(() => {
-        document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal terhubung ke server</td></tr>';
-    });
-}
-
+    
     // Handler menu utama (SATU KALI saja!)
 document.querySelectorAll('#mainMenu a').forEach(link => {
     link.addEventListener('click', function(e) {
