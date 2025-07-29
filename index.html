@@ -590,35 +590,58 @@ function renderPengaturan(selected = '') {
 
             // Event "Ubah" button
             document.querySelectorAll('.editAksesBtn').forEach(btn => {
-                btn.onclick = function() {
-                    const email = this.getAttribute('data-email');
-                    const inputs = document.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
-                    inputs.forEach(cb => cb.disabled = false);
-                    this.innerText = "Simpan";
-                    this.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    this.classList.add('bg-blue-500', 'hover:bg-blue-600');
-                    this.onclick = function() {
-                        let akses = {};
-                        inputs.forEach(cb => {
-                            akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
-                            cb.disabled = true;
-                        });
-                        fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(akses)
-                        })
-                        .then(res => res.json())
-                        .then(response => {
-                            if(response.status === 'ok') {
-                                renderAksesMenuTable();
-                            } else {
-                                alert("Gagal update akses menu!");
-                            }
-                        });
-                    }
+            btn.onclick = function() {
+                const email = this.getAttribute('data-email');
+                const row = this.closest('tr');
+                const inputs = row.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
+                // Simpan state awal (untuk batal)
+                const awal = {};
+                inputs.forEach(cb => {
+                    awal[cb.getAttribute('data-menu')] = cb.checked;
+                    cb.disabled = false;
+                });
+                // Ganti tombol jadi SIMPAN dan BATAL
+                row.querySelector('td:last-child').innerHTML = `
+                    <button class="simpanAksesBtn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs mr-1">Simpan</button>
+                    <button class="batalAksesBtn bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs">Batal</button>
+                `;
+                // Event SIMPAN
+                row.querySelector('.simpanAksesBtn').onclick = function() {
+                    let akses = {};
+                    inputs.forEach(cb => {
+                        akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
+                        cb.disabled = true;
+                    });
+                    fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(akses)
+                    })
+                    .then(res => res.json())
+                    .then(response => {
+                        if(response.status === 'ok') {
+                            renderAksesMenuTable();
+                        } else {
+                            alert("Gagal update akses menu!");
+                        }
+                    });
                 };
-            });
+                // Event BATAL (balik ke state awal & disable input)
+                row.querySelector('.batalAksesBtn').onclick = function() {
+                    inputs.forEach(cb => {
+                        cb.checked = awal[cb.getAttribute('data-menu')];
+                        cb.disabled = true;
+                    });
+                    // Kembalikan tombol ke "Ubah"
+                    row.querySelector('td:last-child').innerHTML = `
+                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${email}">Ubah</button>
+                    `;
+                    // Re-attach event Ubah
+                    row.querySelector('.editAksesBtn').onclick = btn.onclick;
+                };
+            };
+        });
+
         } else {
             document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal memuat data akses menu</td></tr>';
         }
