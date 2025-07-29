@@ -562,7 +562,7 @@ function showUserForm(mode, user = {}, docId = null) {
             <form id="userForm" class="space-y-3">
                 <input type="text" id="userEmail" class="w-full p-2 border rounded" placeholder="Email" value="${user.email || ''}" required>
                 <input type="text" id="userNama" class="w-full p-2 border rounded" placeholder="Nama" value="${user.nama || ''}" required>
-                <input type="text" id="userPassword" class="w-full p-2 border rounded" placeholder="Password" value="${user.password || ''}" required>
+                <input type="password" id="userPassword" class="w-full p-2 border rounded" placeholder="Password" value="" ${mode === 'add' ? "required" : ""}>
                 <select id="userTipe" class="w-full p-2 border rounded" required>
                     <option value="">Pilih Tipe User</option>
                     <option value="admin" ${user.tipe_user === 'admin' ? 'selected' : ''}>admin</option>
@@ -585,12 +585,46 @@ function showUserForm(mode, user = {}, docId = null) {
             tipe_user: document.getElementById('userTipe').value
         };
         if (mode === 'add') {
-            google.script.run.withSuccessHandler(renderUserTable).addUser(data);
+            fetch('https://herurahmatullah.my.id/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.status === 'ok') renderUserTable();
+                else alert(response.message || "Gagal tambah user");
+            })
+            .catch(() => alert("Gagal terhubung ke server"));
         } else {
-            google.script.run.withSuccessHandler(renderUserTable).updateUser(docId, data);
+            fetch('https://herurahmatullah.my.id/users/' + docId, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if(response.status === 'ok') renderUserTable();
+                else alert(response.message || "Gagal update user");
+            })
+            .catch(() => alert("Gagal terhubung ke server"));
         }
     };
 }
+
+    document.getElementById('btnKonfirmasiHapus').onclick = function() {
+    const id = this.getAttribute('data-id');
+    document.getElementById('modalHapusUser').classList.add('hidden');
+    fetch('https://herurahmatullah.my.id/users/' + id, {
+        method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(response => {
+        if(response.status === 'ok') renderUserTable();
+        else alert(response.message || "Gagal hapus user");
+    })
+    .catch(() => alert("Gagal terhubung ke server"));
+};
 
 </script>
 
