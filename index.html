@@ -295,15 +295,15 @@ function renderDataASN() {
             <table class="min-w-full text-sm text-left">
                 <thead>
                     <tr class="bg-blue-50 border-b">
-                        <th class="px-3 py-2 text-center">No.</th>
-                        <th class="px-3 py-2">Nama Lengkap</th>
-                        <th class="px-3 py-2">NIP Baru</th>
-                        <th class="px-3 py-2">Pangkat<br><span class="font-normal text-xs">(Gol./Ruang)</span></th>
-                        <th class="px-3 py-2">TMT Pangkat</th>
-                        <th class="px-3 py-2">Jabatan</th>
-                        <th class="px-3 py-2">TMT Jabatan</th>
-                        <th class="px-3 py-2">Unit Kerja</th>
-                        <th class="px-3 py-2">Instansi Induk</th>
+                        <th class="px-3 py-2 text-center sortable" data-sort="No">No.</th>
+                        <th class="px-3 py-2 sortable" data-sort="Nama">Nama Lengkap</th>
+                        <th class="px-3 py-2 sortable" data-sort="NIP_Baru">NIP Baru</th>
+                        <th class="px-3 py-2 sortable" data-sort="Pang_Gol_Ruang">Pangkat<br><span class="font-normal text-xs">(Gol./Ruang)</span></th>
+                        <th class="px-3 py-2 sortable" data-sort="TMT_Pangkat">TMT Pangkat</th>
+                        <th class="px-3 py-2 sortable" data-sort="Jabatan_Terakhir">Jabatan</th>
+                        <th class="px-3 py-2 sortable" data-sort="TMT_Jab">TMT Jabatan</th>
+                        <th class="px-3 py-2 sortable" data-sort="Unit_Kerja">Unit Kerja</th>
+                        <th class="px-3 py-2 sortable" data-sort="Instansi_Induk">Instansi Induk</th>
                         <th class="px-3 py-2 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -369,8 +369,23 @@ function filterASN(data) {
     );
 }
 
+function sortASN(data) {
+    if (!currentSort.col) return data;
+    let col = currentSort.col;
+    let asc = currentSort.asc ? 1 : -1;
+    return data.slice().sort((a, b) => {
+        let vA = (a[col] || "").toString().toLowerCase();
+        let vB = (b[col] || "").toString().toLowerCase();
+        if (!isNaN(Number(vA)) && !isNaN(Number(vB)) && vA !== "" && vB !== "") {
+            return (Number(vA) - Number(vB)) * asc;
+        }
+        return vA.localeCompare(vB) * asc;
+    });
+}
+
 function renderTablePage() {
-    let data = filterASN(allDataASN);
+    let data = sortASN(filterASN(allDataASN));
+    let currentSort = { col: null, asc: true };
     let total = data.length;
     let startIdx = (currentPage - 1) * rowsPerPage;
     let endIdx = Math.min(startIdx + rowsPerPage, total);
@@ -455,6 +470,25 @@ function renderTablePage() {
             renderTablePage();
         }
     });
+    // Event klik sort header
+setTimeout(() => {
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.style.cursor = "pointer";
+        let sortCol = th.getAttribute('data-sort');
+        th.innerHTML = th.innerText.replace(/[\u25B2\u25BC]/g, '') + 
+            (currentSort.col === sortCol ? (currentSort.asc ? ' &#9650;' : ' &#9660;') : '');
+        th.onclick = function() {
+            if (currentSort.col === sortCol) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.col = sortCol;
+                currentSort.asc = true;
+            }
+            renderTablePage();
+        };
+    });
+}, 100);
+
 }
 
 function renderNotAvailable(menuTitle) {
