@@ -339,7 +339,7 @@ function renderDataASN() {
     };
 
     document.getElementById('asnTableBody').innerHTML = `<tr><td colspan="10" class="py-8 text-center text-blue-500">Loading data ...</td></tr>`;
-    fetch('https://063707fc-6341-4136-82c4-ad936aa7f29a-00-3bzwgw6kkd2o4.sisko.replit.dev/asn?limit=5000')
+    fetch('https://herurahmatullah.my.id/asn')
         .then(res => res.json())
         .then(json => {
             allDataASN = json.data || [];
