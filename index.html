@@ -715,7 +715,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
     spinner.classList.remove('hidden');
     document.getElementById('error').innerText = '';
 
-    fetch('http://116.193.190.30:5000/login', {
+    fetch('https://herurahmatullah.my.id/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
