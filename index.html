@@ -400,30 +400,62 @@ function renderTablePage() {
         ? 'Menampilkan 0 data'
         : `Menampilkan ${startIdx + 1} sampai ${endIdx} dari ${total} data`;
     document.getElementById('paginationInfo').innerText = info;
-    // Pagination
+
+    // Pagination modern
     let totalPages = Math.ceil(total / rowsPerPage);
-    let nav = '';
+    let nav = "";
+
+    // Tombol Awal dan Sebelumnya
+    nav += `<button ${currentPage === 1 ? 'disabled' : ''} class="px-2 py-1 rounded border text-gray-600 hover:bg-gray-100" data-page="first">Awal</button>`;
     nav += `<button ${currentPage === 1 ? 'disabled' : ''} class="px-2 py-1 rounded border text-gray-600 hover:bg-gray-100" data-page="prev">Sebelumnya</button>`;
-    let maxShow = 5;
-    let start = Math.max(1, currentPage - 2);
-    let end = Math.min(totalPages, start + maxShow - 1);
-    for (let p = start; p <= end; p++) {
-        nav += `<button class="px-2 py-1 rounded border ${currentPage === p ? 'font-bold bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" data-page="${p}">${p}</button>`;
+
+    // Penomoran halaman pintar
+    let pageNumbers = [];
+    if (totalPages <= 8) {
+        for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+    } else {
+        // Tiga awal
+        pageNumbers = [1, 2, 3];
+        if (currentPage > 5) pageNumbers.push('...');
+        // Sekitar currentPage
+        let startMid = Math.max(4, currentPage - 1);
+        let endMid = Math.min(totalPages - 3, currentPage + 1);
+        for (let i = startMid; i <= endMid; i++) pageNumbers.push(i);
+        if (currentPage < totalPages - 4) pageNumbers.push('...');
+        // Tiga akhir
+        pageNumbers.push(totalPages - 2, totalPages - 1, totalPages);
+        // Hilangkan ganda & urutkan
+        pageNumbers = [...new Set(pageNumbers)].filter(x => x >= 1 && x <= totalPages);
+        pageNumbers.sort((a, b) => (isNaN(a) ? 99999 : a) - (isNaN(b) ? 99999 : b));
     }
-    if (end < totalPages) nav += `<span class="px-2">...</span><button class="px-2 py-1 rounded border text-gray-600 hover:bg-gray-100" data-page="${totalPages}">${totalPages}</button>`;
+
+    for (let p of pageNumbers) {
+        if (p === '...') {
+            nav += `<span class="px-2">...</span>`;
+        } else {
+            nav += `<button class="px-2 py-1 rounded border ${currentPage === p ? 'font-bold bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" data-page="${p}">${p}</button>`;
+        }
+    }
+
+    // Tombol Selanjutnya dan Akhir
     nav += `<button ${currentPage === totalPages ? 'disabled' : ''} class="px-2 py-1 rounded border text-gray-600 hover:bg-gray-100" data-page="next">Selanjutnya</button>`;
+    nav += `<button ${currentPage === totalPages ? 'disabled' : ''} class="px-2 py-1 rounded border text-gray-600 hover:bg-gray-100" data-page="last">Akhir</button>`;
+
     document.getElementById('paginationNav').innerHTML = nav;
+
+    // Event handler tombol
     document.querySelectorAll('#paginationNav [data-page]').forEach(btn => {
         btn.onclick = function () {
             let page = this.getAttribute('data-page');
-            if (page === 'prev' && currentPage > 1) currentPage--;
+            if (page === 'first') currentPage = 1;
+            else if (page === 'last') currentPage = totalPages;
+            else if (page === 'prev' && currentPage > 1) currentPage--;
             else if (page === 'next' && currentPage < totalPages) currentPage++;
             else if (!isNaN(page)) currentPage = parseInt(page);
             renderTablePage();
         }
     });
 }
-
 
 
 function renderNotAvailable(menuTitle) {
