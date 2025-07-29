@@ -270,6 +270,7 @@ function renderDataASN() {
 let allDataASN = [];
 let currentPage = 1;
 let rowsPerPage = 10;
+let currentSort = { col: null, asc: true };
 
 // Panggil fungsi ini saat menu Data ASN diklik
 function renderDataASN() {
@@ -385,7 +386,6 @@ function sortASN(data) {
 
 function renderTablePage() {
     let data = sortASN(filterASN(allDataASN));
-    let currentSort = { col: null, asc: true };
     let total = data.length;
     let startIdx = (currentPage - 1) * rowsPerPage;
     let endIdx = Math.min(startIdx + rowsPerPage, total);
