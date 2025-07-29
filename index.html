@@ -671,6 +671,17 @@ function renderUserTable() {
             </table>
         </div>
     </div>
+    <!-- Modal Hapus User -->
+    <div id="modalHapusUser" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 hidden">
+      <div class="bg-white p-6 rounded shadow-lg w-full max-w-md">
+        <div class="mb-4 text-lg font-bold">Konfirmasi Hapus User</div>
+        <div id="hapusUserNama" class="mb-4 text-gray-700"></div>
+        <div class="flex justify-end gap-2">
+          <button id="btnBatalHapus" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+          <button id="btnKonfirmasiHapus" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Hapus</button>
+        </div>
+      </div>
+    </div>
     `;
 
     fetch('https://herurahmatullah.my.id/users')
@@ -695,59 +706,48 @@ function renderUserTable() {
             });
             document.getElementById('userTableBody').innerHTML = rows;
 
-            // Set event listener Edit/Hapus
-            document.querySelectorAll('.editAksesBtn').forEach(btn => {
-            btn.onclick = function() {
-                const email = this.getAttribute('data-email');
-                const row = this.closest('tr');
-                const inputs = row.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
-                // Simpan state awal (untuk batal)
-                const awal = {};
-                inputs.forEach(cb => {
-                    awal[cb.getAttribute('data-menu')] = cb.checked;
-                    cb.disabled = false;
-                });
-                // Ganti tombol jadi SIMPAN dan BATAL
-                row.querySelector('td:last-child').innerHTML = `
-                    <button class="simpanAksesBtn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs mr-1">Simpan</button>
-                    <button class="batalAksesBtn bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs">Batal</button>
-                `;
-                // Event SIMPAN
-                row.querySelector('.simpanAksesBtn').onclick = function() {
-                    let akses = {};
-                    inputs.forEach(cb => {
-                        akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
-                        cb.disabled = true;
-                    });
-                    fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(akses)
-                    })
-                    .then(res => res.json())
-                    .then(response => {
-                        if(response.status === 'ok') {
-                            renderAksesMenuTable();
-                        } else {
-                            alert("Gagal update akses menu!");
-                        }
-                    });
-                };
-                // Event BATAL (balik ke state awal & disable input)
-                row.querySelector('.batalAksesBtn').onclick = function() {
-                    inputs.forEach(cb => {
-                        cb.checked = awal[cb.getAttribute('data-menu')];
-                        cb.disabled = true;
-                    });
-                    // Kembalikan tombol ke "Ubah"
-                    row.querySelector('td:last-child').innerHTML = `
-                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${email}">Ubah</button>
-                    `;
-                    // Re-attach event Ubah
-                    row.querySelector('.editAksesBtn').onclick = btn.onclick;
-                };
+            // === Event Listener Tambah User ===
+            document.getElementById('addUserBtn').onclick = function() {
+                showUserForm('add');
             };
-        });
+
+            // === Event Listener Ubah User ===
+            document.querySelectorAll('.editUserBtn').forEach(btn => {
+                btn.onclick = function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const user = users.find(u => u.id === id);
+                    showUserForm('edit', user, id);
+                };
+            });
+
+            // === Event Listener Hapus User (open modal) ===
+            document.querySelectorAll('.deleteUserBtn').forEach(btn => {
+                btn.onclick = function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const user = users.find(u => u.id === id);
+                    document.getElementById('hapusUserNama').innerText = user ? user.email + ' - ' + user.nama : '';
+                    document.getElementById('modalHapusUser').classList.remove('hidden');
+                    document.getElementById('btnKonfirmasiHapus').setAttribute('data-id', id);
+                };
+            });
+
+            // === Modal Hapus User Event ===
+            document.getElementById('btnBatalHapus').onclick = function() {
+                document.getElementById('modalHapusUser').classList.add('hidden');
+            };
+            document.getElementById('btnKonfirmasiHapus').onclick = function() {
+                const id = this.getAttribute('data-id');
+                document.getElementById('modalHapusUser').classList.add('hidden');
+                fetch('https://herurahmatullah.my.id/users/' + id, {
+                    method: 'DELETE'
+                })
+                .then(res => res.json())
+                .then(response => {
+                    if(response.status === 'ok') renderUserTable();
+                    else alert(response.message || "Gagal hapus user");
+                })
+                .catch(() => alert("Gagal terhubung ke server"));
+            };
 
         } else {
             document.getElementById('userTableBody').innerHTML = '<tr><td colspan="5">Gagal memuat data user</td></tr>';
@@ -757,17 +757,6 @@ function renderUserTable() {
         document.getElementById('userTableBody').innerHTML = '<tr><td colspan="5">Gagal mengambil data user</td></tr>';
     });
 }
-
-// Listener tombol hapus/modal
-document.getElementById('btnBatalHapus').onclick = function() {
-    document.getElementById('modalHapusUser').classList.add('hidden');
-};
-document.getElementById('btnKonfirmasiHapus').onclick = function() {
-    const id = this.getAttribute('data-id');
-    document.getElementById('modalHapusUser').classList.add('hidden');
-    alert("Fitur hapus user belum tersedia!");
-};
-
 
 // Form Tambah/Edit User
 function showUserForm(mode, user = {}, docId = null) {
