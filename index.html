@@ -503,8 +503,8 @@ function renderNotAvailable(menuTitle) {
 }
 
 function renderPengaturan(selected = '') {
+    // Jika klik "Pengaturan" utama
     if (selected === '') {
-        // Hanya tombol sub-menu, tanpa tabel akses menu/user
         document.getElementById('mainContent').innerHTML = `
             <div class="bg-white rounded-xl shadow-md p-4">
                 <div class="text-2xl font-bold text-gray-800 mb-2 text-center">Pengaturan</div>
@@ -518,18 +518,20 @@ function renderPengaturan(selected = '') {
                 </div>
             </div>
         `;
-        // Listener sub-menu
         document.getElementById('submenuAkses').onclick = () => renderPengaturan('akses');
         document.getElementById('submenuUser').onclick = () => renderPengaturan('user');
     }
+    // Jika klik sub-menu akses
     else if (selected === 'akses') {
+        // Panggil renderAksesMenuTable (jangan renderNotAvailable!)
+        document.getElementById('mainContent').innerHTML = `<div id="pengaturanContent"></div>`;
         renderAksesMenuTable();
     }
+    // Jika klik sub-menu user
     else if (selected === 'user') {
         renderUserTable();
     }
 }
-
 
     function renderAksesMenuTable(editEmail = null) {
     document.getElementById('pengaturanContent').innerHTML = `
@@ -567,12 +569,8 @@ function renderPengaturan(selected = '') {
             data.forEach((row, idx) => {
                 const isEditing = editEmail === row.email;
                 const isAdmin = row.tipe_user === 'admin';
-
-                // Helper: checkbox always disabled, except on "edit" for this row and not admin
                 function checked(val) { return val ? 'checked' : ''; }
-                function disabled() {
-                    return (isEditing && !isAdmin) ? '' : 'disabled';
-                }
+                function disabled() { return (isEditing && !isAdmin) ? '' : 'disabled'; }
 
                 // Tombol Aksi
                 let aksiHtml = '';
@@ -607,7 +605,7 @@ function renderPengaturan(selected = '') {
             document.querySelectorAll('.editAksesBtn').forEach(btn => {
                 btn.onclick = function() {
                     const email = this.getAttribute('data-email');
-                    renderAksesMenuTable(email); // render ulang table, row ini mode edit
+                    renderAksesMenuTable(email);
                 };
             });
 
@@ -620,7 +618,6 @@ function renderPengaturan(selected = '') {
                     inputs.forEach(cb => {
                         akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
                     });
-                    // Simpan ke API
                     fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -629,7 +626,7 @@ function renderPengaturan(selected = '') {
                     .then(res => res.json())
                     .then(response => {
                         if(response.status === 'ok') {
-                            renderAksesMenuTable(); // keluar dari mode edit
+                            renderAksesMenuTable();
                         } else {
                             alert("Gagal update akses menu!");
                         }
@@ -640,7 +637,7 @@ function renderPengaturan(selected = '') {
             // Event Batal
             document.querySelectorAll('.batalAksesBtn').forEach(btn => {
                 btn.onclick = function() {
-                    renderAksesMenuTable(); // render ulang, cancel edit
+                    renderAksesMenuTable();
                 };
             });
         } else {
@@ -651,8 +648,7 @@ function renderPengaturan(selected = '') {
         document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal terhubung ke server</td></tr>';
     });
 }
-
-    
+   
 function renderUserTable() {
     document.getElementById('mainContent').innerHTML = `
     <div class="bg-white rounded-xl shadow-md p-4">
