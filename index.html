@@ -502,32 +502,33 @@ function renderNotAvailable(menuTitle) {
     `;
 }
 
-function renderPengaturan(selected = 'akses') {
-    document.getElementById('mainContent').innerHTML = `
-        <div class="bg-white rounded-xl shadow-md p-4">
-            <div class="text-2xl font-bold text-gray-800 mb-2 text-center">Pengaturan</div>
-            <div class="flex gap-2 justify-center mb-4">
-                <button id="submenuAkses" class="px-5 py-2 rounded-lg text-sm font-semibold border
-                    ${selected==='akses' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-blue-50'}">
-                    Akses Menu
-                </button>
-                <button id="submenuUser" class="px-5 py-2 rounded-lg text-sm font-semibold border
-                    ${selected==='user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-blue-50'}">
-                    User
-                </button>
+function renderPengaturan(selected = '') {
+    // Jika belum memilih sub (klik Pengaturan dari menu utama)
+    if (selected === '') {
+        document.getElementById('mainContent').innerHTML = `
+            <div class="bg-white rounded-xl shadow-md p-4">
+                <div class="text-2xl font-bold text-gray-800 mb-2 text-center">Pengaturan</div>
+                <div class="flex gap-2 justify-center mb-4">
+                    <button id="submenuAkses" class="px-5 py-2 rounded-lg text-sm font-semibold border bg-blue-600 text-white">
+                        Akses Menu
+                    </button>
+                    <button id="submenuUser" class="px-5 py-2 rounded-lg text-sm font-semibold border bg-gray-100 text-gray-800 hover:bg-blue-50">
+                        User
+                    </button>
+                </div>
             </div>
-            <div id="pengaturanContent"></div>
-        </div>
-    `;
-    document.getElementById('submenuAkses').onclick = () => renderPengaturan('akses');
-    document.getElementById('submenuUser').onclick = () => renderPengaturan('user');
-    if (selected === 'akses') {
-        renderAksesMenuTable();
-    } else {
-        renderUserTable();
+        `;
+        // Submenu listener
+        document.getElementById('submenuAkses').onclick = () => renderPengaturan('akses');
+        document.getElementById('submenuUser').onclick = () => renderPengaturan('user');
+    }
+    // Jika memilih sub-menu, tampilkan hanya tabel
+    else if (selected === 'akses') {
+        renderAksesMenuTable(); // Fungsi untuk render tabel akses menu saja, tanpa tombol sub
+    } else if (selected === 'user') {
+        renderUserTable(); // Fungsi untuk render tabel user saja, tanpa tombol sub
     }
 }
-
 
 function renderUserTable() {
     document.getElementById('mainContent').innerHTML = `
