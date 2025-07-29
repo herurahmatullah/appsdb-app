@@ -270,9 +270,8 @@ function renderDataASN() {
 let allDataASN = [];
 let currentPage = 1;
 let rowsPerPage = 10;
-let currentSort = { col: null, asc: true };
+let currentSort = { col: null, asc: true }; // Pindahkan ke global
 
-// Panggil fungsi ini saat menu Data ASN diklik
 function renderDataASN() {
     document.getElementById('mainContent').innerHTML = `
         <div class="text-center text-2xl md:text-3xl font-bold text-gray-800 mb-4">Data ASN</div>
@@ -386,6 +385,7 @@ function sortASN(data) {
 
 function renderTablePage() {
     let data = sortASN(filterASN(allDataASN));
+    // *** Jangan buat currentSort baru di sini ***
     let total = data.length;
     let startIdx = (currentPage - 1) * rowsPerPage;
     let endIdx = Math.min(startIdx + rowsPerPage, total);
@@ -471,24 +471,23 @@ function renderTablePage() {
         }
     });
     // Event klik sort header
-setTimeout(() => {
-    document.querySelectorAll('th.sortable').forEach(th => {
-        th.style.cursor = "pointer";
-        let sortCol = th.getAttribute('data-sort');
-        th.innerHTML = th.innerText.replace(/[\u25B2\u25BC]/g, '') + 
-            (currentSort.col === sortCol ? (currentSort.asc ? ' &#9650;' : ' &#9660;') : '');
-        th.onclick = function() {
-            if (currentSort.col === sortCol) {
-                currentSort.asc = !currentSort.asc;
-            } else {
-                currentSort.col = sortCol;
-                currentSort.asc = true;
-            }
-            renderTablePage();
-        };
-    });
-}, 100);
-
+    setTimeout(() => {
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.style.cursor = "pointer";
+            let sortCol = th.getAttribute('data-sort');
+            th.innerHTML = th.innerText.replace(/[\u25B2\u25BC]/g, '') + 
+                (currentSort.col === sortCol ? (currentSort.asc ? ' &#9650;' : ' &#9660;') : '');
+            th.onclick = function() {
+                if (currentSort.col === sortCol) {
+                    currentSort.asc = !currentSort.asc;
+                } else {
+                    currentSort.col = sortCol;
+                    currentSort.asc = true;
+                }
+                renderTablePage();
+            };
+        });
+    }, 100);
 }
 
 function renderNotAvailable(menuTitle) {
