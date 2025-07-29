@@ -491,7 +491,6 @@ function renderUserTable() {
     </div>
     `;
 
-    // Fetch user dari Apps Script
     fetch('https://herurahmatullah.my.id/users')
     .then(res => res.json())
     .then(function(response) {
@@ -499,59 +498,61 @@ function renderUserTable() {
             let users = response.users;
             let rows = "";
             users.forEach((user, idx) => {
-            rows += `
-            <tr class="border-b hover:bg-blue-50">
-                <td class="px-3 py-2 text-center">${idx + 1}</td>
-                <td class="px-3 py-2">${user.email}</td>
-                <td class="px-3 py-2">${user.nama}</td>
-                <td class="px-3 py-2">${user.tipe_user}</td>
-                <td class="px-3 py-2 text-center">
-                    <button class="editUserBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-id="${user.id}">Ubah</button>
-                    <button class="deleteUserBtn bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs ml-1" data-id="${user.id}">Hapus</button>
-                </td>
-            </tr>
-            `;
-        });
-        document.getElementById('userTableBody').innerHTML = rows;
+                rows += `
+                <tr class="border-b hover:bg-blue-50">
+                    <td class="px-3 py-2 text-center">${idx + 1}</td>
+                    <td class="px-3 py-2">${user.email}</td>
+                    <td class="px-3 py-2">${user.nama}</td>
+                    <td class="px-3 py-2">${user.tipe_user}</td>
+                    <td class="px-3 py-2 text-center">
+                        <button class="editUserBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-id="${user.id}">Ubah</button>
+                        <button class="deleteUserBtn bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs ml-1" data-id="${user.id}">Hapus</button>
+                    </td>
+                </tr>
+                `;
+            });
+            document.getElementById('userTableBody').innerHTML = rows;
 
-        // Set event listener Edit/Hapus
-        document.querySelectorAll('.editUserBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const user = users.find(u => u.id === id);
-                showUserForm('edit', user, id);
+            // Set event listener Edit/Hapus
+            document.querySelectorAll('.editUserBtn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const user = users.find(u => u.id === id);
+                    showUserForm('edit', user, id);
+                });
             });
-        });
-        document.querySelectorAll('.deleteUserBtn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                const user = users.find(u => u.id === id);
-                // Tampilkan modal
-                document.getElementById('hapusUserNama').innerText = user ? user.email + ' - ' + user.nama : '';
-                document.getElementById('modalHapusUser').classList.remove('hidden');
-                // Simpan id user yg akan dihapus (bisa pakai data attr)
-                document.getElementById('btnKonfirmasiHapus').setAttribute('data-id', id);
+            document.querySelectorAll('.deleteUserBtn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    const user = users.find(u => u.id === id);
+                    document.getElementById('hapusUserNama').innerText = user ? user.email + ' - ' + user.nama : '';
+                    document.getElementById('modalHapusUser').classList.remove('hidden');
+                    document.getElementById('btnKonfirmasiHapus').setAttribute('data-id', id);
+                });
             });
-        });
+
+            document.getElementById('addUserBtn').onclick = function() {
+                showUserForm('add');
+            };
+        } else {
+            document.getElementById('userTableBody').innerHTML = '<tr><td colspan="5">Gagal memuat data user</td></tr>';
+        }
+    })
+    .catch(function() {
+        document.getElementById('userTableBody').innerHTML = '<tr><td colspan="5">Gagal mengambil data user</td></tr>';
     });
-
-    // Tambah user
-    setTimeout(() => {
-        document.getElementById('addUserBtn').onclick = function() {
-            showUserForm('add');
-        };
-    }, 300);
 }
 
-// DI BAWAHNYA! (bukan di dalam renderUserTable)
+// Listener tombol hapus/modal
 document.getElementById('btnBatalHapus').onclick = function() {
     document.getElementById('modalHapusUser').classList.add('hidden');
 };
 document.getElementById('btnKonfirmasiHapus').onclick = function() {
     const id = this.getAttribute('data-id');
     document.getElementById('modalHapusUser').classList.add('hidden');
-    google.script.run.withSuccessHandler(renderUserTable).deleteUser(id);
+    alert("Fitur hapus user belum tersedia!");
 };
+
 
 // Form Tambah/Edit User
 function showUserForm(mode, user = {}, docId = null) {
