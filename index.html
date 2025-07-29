@@ -531,8 +531,8 @@ function renderPengaturan(selected = '') {
 }
 
 
-    function renderAksesMenuTable() {
-    document.getElementById('mainContent').innerHTML = `
+    function renderAksesMenuTable(editEmail = null) {
+    document.getElementById('pengaturanContent').innerHTML = `
     <div class="bg-white rounded-xl shadow-md p-4">
         <div class="text-2xl font-bold text-gray-800 text-center mb-2">Akses Menu</div>
         <div class="overflow-auto rounded">
@@ -565,9 +565,26 @@ function renderPengaturan(selected = '') {
             const data = response.data;
             let rows = '';
             data.forEach((row, idx) => {
+                const isEditing = editEmail === row.email;
                 const isAdmin = row.tipe_user === 'admin';
+
+                // Helper: checkbox always disabled, except on "edit" for this row and not admin
                 function checked(val) { return val ? 'checked' : ''; }
-                function disabled() { return isAdmin ? 'disabled' : ''; }
+                function disabled() {
+                    return (isEditing && !isAdmin) ? '' : 'disabled';
+                }
+
+                // Tombol Aksi
+                let aksiHtml = '';
+                if (isEditing && !isAdmin) {
+                    aksiHtml = `
+                        <button class="simpanAksesBtn bg-blue-600 text-white px-4 py-1 rounded text-sm" data-email="${row.email}">Simpan</button>
+                        <button class="batalAksesBtn bg-gray-400 text-white px-4 py-1 rounded text-sm ml-2" data-email="${row.email}">Batal</button>
+                    `;
+                } else {
+                    aksiHtml = `<button class="editAksesBtn bg-green-500 text-white px-4 py-1 rounded text-sm" data-email="${row.email}" ${isAdmin ? 'disabled' : ''}>Ubah</button>`;
+                }
+
                 rows += `
                 <tr class="border-b hover:bg-blue-50">
                     <td class="px-3 py-2 text-center">${idx + 1}</td>
@@ -580,38 +597,30 @@ function renderPengaturan(selected = '') {
                     <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="gaji_berkala" ${checked(row.gaji_berkala)} ${disabled()}></td>
                     <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="mutasi" ${checked(row.mutasi)} ${disabled()}></td>
                     <td class="px-3 py-2 text-center"><input type="checkbox" data-email="${row.email}" data-menu="pensiun" ${checked(row.pensiun)} ${disabled()}></td>
-                    <td class="px-3 py-2 text-center">
-                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${row.email}" ${isAdmin ? 'disabled' : ''}>Ubah</button>
-                    </td>
+                    <td class="px-3 py-2 text-center">${aksiHtml}</td>
                 </tr>
                 `;
             });
             document.getElementById('aksesMenuTableBody').innerHTML = rows;
 
-            // Event "Ubah" button
+            // Event Edit Akses
             document.querySelectorAll('.editAksesBtn').forEach(btn => {
-            btn.onclick = function() {
-                const email = this.getAttribute('data-email');
-                const row = this.closest('tr');
-                const inputs = row.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
-                // Simpan state awal (untuk batal)
-                const awal = {};
-                inputs.forEach(cb => {
-                    awal[cb.getAttribute('data-menu')] = cb.checked;
-                    cb.disabled = false;
-                });
-                // Ganti tombol jadi SIMPAN dan BATAL
-                row.querySelector('td:last-child').innerHTML = `
-                    <button class="simpanAksesBtn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs mr-1">Simpan</button>
-                    <button class="batalAksesBtn bg-gray-400 hover:bg-gray-500 text-white px-3 py-1 rounded text-xs">Batal</button>
-                `;
-                // Event SIMPAN
-                row.querySelector('.simpanAksesBtn').onclick = function() {
+                btn.onclick = function() {
+                    const email = this.getAttribute('data-email');
+                    renderAksesMenuTable(email); // render ulang table, row ini mode edit
+                };
+            });
+
+            // Event Simpan
+            document.querySelectorAll('.simpanAksesBtn').forEach(btn => {
+                btn.onclick = function() {
+                    const email = this.getAttribute('data-email');
+                    const inputs = document.querySelectorAll('input[type=checkbox][data-email="' + email + '"]');
                     let akses = {};
                     inputs.forEach(cb => {
                         akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
-                        cb.disabled = true;
                     });
+                    // Simpan ke API
                     fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -620,28 +629,20 @@ function renderPengaturan(selected = '') {
                     .then(res => res.json())
                     .then(response => {
                         if(response.status === 'ok') {
-                            renderAksesMenuTable();
+                            renderAksesMenuTable(); // keluar dari mode edit
                         } else {
                             alert("Gagal update akses menu!");
                         }
                     });
                 };
-                // Event BATAL (balik ke state awal & disable input)
-                row.querySelector('.batalAksesBtn').onclick = function() {
-                    inputs.forEach(cb => {
-                        cb.checked = awal[cb.getAttribute('data-menu')];
-                        cb.disabled = true;
-                    });
-                    // Kembalikan tombol ke "Ubah"
-                    row.querySelector('td:last-child').innerHTML = `
-                        <button class="editAksesBtn bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs" data-email="${email}">Ubah</button>
-                    `;
-                    // Re-attach event Ubah
-                    row.querySelector('.editAksesBtn').onclick = btn.onclick;
-                };
-            };
-        });
+            });
 
+            // Event Batal
+            document.querySelectorAll('.batalAksesBtn').forEach(btn => {
+                btn.onclick = function() {
+                    renderAksesMenuTable(); // render ulang, cancel edit
+                };
+            });
         } else {
             document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal memuat data akses menu</td></tr>';
         }
