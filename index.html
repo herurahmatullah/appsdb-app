@@ -519,18 +519,15 @@ function renderPengaturan(selected = 'akses') {
             <div id="pengaturanContent"></div>
         </div>
     `;
-    // Submenu listener
     document.getElementById('submenuAkses').onclick = () => renderPengaturan('akses');
     document.getElementById('submenuUser').onclick = () => renderPengaturan('user');
-
-    // Isi content
     if (selected === 'akses') {
         renderAksesMenuTable();
     } else {
         renderUserTable();
     }
-
 }
+
 
 function renderUserTable() {
     document.getElementById('mainContent').innerHTML = `
@@ -803,7 +800,6 @@ function showUserForm(mode, user = {}, docId = null) {
         document.getElementById('aksesMenuTableBody').innerHTML = '<tr><td colspan="11">Gagal terhubung ke server</td></tr>';
     });
 }
-
 
     // Handler menu utama (SATU KALI saja!)
 document.querySelectorAll('#mainMenu a').forEach(link => {
