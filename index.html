@@ -177,11 +177,23 @@
             </div>
         </div>
     `;
-    const jumlahData = { asn: 1234, pns: 1000, cpns: 150, pppk: 84 };
-    document.getElementById('jumlahASN').innerText = jumlahData.asn;
-    document.getElementById('jumlahPNS').innerText = jumlahData.pns;
-    document.getElementById('jumlahCPNS').innerText = jumlahData.cpns;
-    document.getElementById('jumlahPPPK').innerText = jumlahData.pppk;
+
+    // Fetch jumlah data ASN, PNS, CPNS, PPPK
+    fetch('https://herurahmatullah.my.id/asn')
+        .then(res => res.json())
+        .then(json => {
+            let asn = json.data || [];
+            // Filter data untuk jenis PNS, CPNS, PPPK
+            let jmlASN = asn.length;
+            let jmlPNS = asn.filter(x => (x.Status_Kepegawaian || '').toLowerCase().includes('pns')).length;
+            let jmlCPNS = asn.filter(x => (x.Status_Kepegawaian || '').toLowerCase().includes('cpns')).length;
+            let jmlPPPK = asn.filter(x => (x.Status_Kepegawaian || '').toLowerCase().includes('pppk')).length;
+
+            document.getElementById('jumlahASN').innerText = jmlASN;
+            document.getElementById('jumlahPNS').innerText = jmlPNS;
+            document.getElementById('jumlahCPNS').innerText = jmlCPNS;
+            document.getElementById('jumlahPPPK').innerText = jmlPPPK;
+        });
 }
 
 function renderNotAvailable(menuTitle) {
