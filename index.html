@@ -920,7 +920,7 @@ function showMenuForAkses(akses) {
     if(!akses) return;
     Object.keys(menuMap).forEach(key => {
         if(akses[key]) {
-            document.querySelectorAll(`.menu-admin[data-menu="${menuMap[key]}"]`).forEach(item => item.style.display = '');
+            document.querySelectorAll(`.menu-admin[data-ak="${menuMap[key]}"]`).forEach(item => item.style.display = '');
         }
     });
 }
