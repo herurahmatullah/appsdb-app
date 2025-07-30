@@ -83,28 +83,28 @@
         <li>
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="beranda">Beranda</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="asn">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="asn">Data ASN</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="pns">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="pns">Data PNS</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="cpns">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="cpns">Data CPNS</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="pppk">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="pppk">Data PPPK</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="pangkat">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="pangkat">Data Pangkat</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="gaji">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="gaji">Data Gaji Berkala</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="mutasi">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="mutasi">Data Mutasi</a>
         </li>
-        <li class="menu-admin">
+        <li class="menu-admin" data-ak="pensiun">
           <a href="#" class="text-white font-medium px-3 py-1.5 rounded hover:bg-blue-700 transition" data-menu="pensiun">Data Pensiun</a>
         </li>
         <li class="menu-admin">
@@ -903,6 +903,28 @@ document.getElementById('menuPengaturanBtn').addEventListener('click', function(
     });
 });
 
+function showMenuForAkses(akses) {
+    // Mapping field akses_menu ke data-menu pada HTML
+    const menuMap = {
+        asn: 'asn',
+        pns: 'pns',
+        cpns: 'cpns',
+        pppk: 'pppk',
+        pangkat: 'pangkat',
+        gaji_berkala: 'gaji',
+        mutasi: 'mutasi',
+        pensiun: 'pensiun'
+    };
+    // Sembunyikan semua dulu
+    document.querySelectorAll('.menu-admin').forEach(item => item.style.display = 'none');
+    if(!akses) return;
+    Object.keys(menuMap).forEach(key => {
+        if(akses[key]) {
+            document.querySelectorAll(`.menu-admin[data-menu="${menuMap[key]}"]`).forEach(item => item.style.display = '');
+        }
+    });
+}
+
     </script>
 
     <script>
@@ -942,7 +964,19 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
         if (response.status === 'ok') {
             loginUserState = response;
             document.getElementById('userLabel').innerText = `${response.nama} (${response.tipe_user})`;
-            showMenuForRole(response.tipe_user);
+
+            if (response.tipe_user === 'admin') {
+                showMenuForRole('admin'); // Semua menu admin muncul
+            } else {
+                // Fetch akses_menu untuk user ini
+                fetch('https://herurahmatullah.my.id/akses_menu')
+                .then(res => res.json())
+                .then(json => {
+                    const akses = (json.data || []).find(a => a.email === response.email);
+                    showMenuForAkses(akses);
+                });
+            }
+
             showPage('dashboard');
             renderDashboardBox();
             document.querySelectorAll('#mainMenu a').forEach(l => l.classList.remove('bg-blue-900', 'font-bold'));
@@ -950,6 +984,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
         } else {
             document.getElementById('error').innerText = response.message;
         }
+
     })
     .catch(function(error) {
         btn.disabled = false;
