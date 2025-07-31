@@ -179,7 +179,7 @@
     `;
 
     // Fetch jumlah data ASN, PNS, CPNS, PPPK
-    fetch('https://herurahmatullah.my.id/asn')
+    fetch('https://appsdbherurahmatullah.my.id/asn')
         .then(res => res.json())
         .then(json => {
             let asn = json.data || [];
@@ -351,7 +351,7 @@ function renderDataASN() {
     };
 
     document.getElementById('asnTableBody').innerHTML = `<tr><td colspan="10" class="py-8 text-center text-blue-500">Loading data ...</td></tr>`;
-    fetch('https://herurahmatullah.my.id/asn')
+    fetch('https://appsdbherurahmatullah.my.id/asn')
         .then(res => res.json())
         .then(json => {
             allDataASN = json.data || [];
@@ -572,7 +572,7 @@ function renderPengaturan(selected = '') {
     </div>
     `;
 
-    fetch('https://herurahmatullah.my.id/akses_menu')
+    fetch('https://appsdbherurahmatullah.my.id/akses_menu')
     .then(res => res.json())
     .then(response => {
         if(response.status === "ok") {
@@ -630,7 +630,7 @@ function renderPengaturan(selected = '') {
                     inputs.forEach(cb => {
                         akses[cb.getAttribute('data-menu')] = cb.checked ? 1 : 0;
                     });
-                    fetch('https://herurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
+                    fetch('https://appsdbherurahmatullah.my.id/akses_menu/' + encodeURIComponent(email), {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(akses)
@@ -696,7 +696,7 @@ function renderUserTable() {
     </div>
     `;
 
-    fetch('https://herurahmatullah.my.id/users')
+    fetch('https://appsdbherurahmatullah.my.id/users')
     .then(res => res.json())
     .then(function(response) {
         if(response.status === "ok") {
@@ -750,7 +750,7 @@ function renderUserTable() {
             document.getElementById('btnKonfirmasiHapus').onclick = function() {
                 const id = this.getAttribute('data-id');
                 document.getElementById('modalHapusUser').classList.add('hidden');
-                fetch('https://herurahmatullah.my.id/users/' + id, {
+                fetch('https://appsdbherurahmatullah.my.id/users/' + id, {
                     method: 'DELETE'
                 })
                 .then(res => res.json())
@@ -801,7 +801,7 @@ function showUserForm(mode, user = {}, docId = null) {
             tipe_user: document.getElementById('userTipe').value
         };
         if (mode === 'add') {
-            fetch('https://herurahmatullah.my.id/users', {
+            fetch('https://appsdbherurahmatullah.my.id/users', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
@@ -813,7 +813,7 @@ function showUserForm(mode, user = {}, docId = null) {
             })
             .catch(() => alert("Gagal terhubung ke server"));
         } else {
-            fetch('https://herurahmatullah.my.id/users/' + docId, {
+            fetch('https://appsdbherurahmatullah.my.id/users/' + docId, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
@@ -831,7 +831,7 @@ function showUserForm(mode, user = {}, docId = null) {
     document.getElementById('btnKonfirmasiHapus').onclick = function() {
     const id = this.getAttribute('data-id');
     document.getElementById('modalHapusUser').classList.add('hidden');
-    fetch('https://herurahmatullah.my.id/users/' + id, {
+    fetch('https://appsdbherurahmatullah.my.id/users/' + id, {
         method: 'DELETE'
     })
     .then(res => res.json())
@@ -962,7 +962,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
     spinner.classList.remove('hidden');
     document.getElementById('error').innerText = '';
 
-    fetch('https://herurahmatullah.my.id/login', {
+    fetch('https://appsdbherurahmatullah.my.id/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -981,7 +981,7 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
                 showMenuForRole('admin'); // Semua menu admin muncul
             } else {
                 // Fetch akses_menu untuk user ini
-                fetch('https://herurahmatullah.my.id/akses_menu')
+                fetch('https://appsdbherurahmatullah.my.id/akses_menu')
                 .then(res => res.json())
                 .then(json => {
                     const akses = (json.data || []).find(a => a.email === response.email);
