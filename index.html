@@ -1159,9 +1159,13 @@ function logoutUser() {
 
 <script>
 function formatLogDatetime(dt) {
-    if (!dt) return '';
+    if (!dt) return '-';
+    // Format dari DB: '2025-08-07 12:37:05'
+    // JS hanya paham jika 'T' di tengah: '2025-08-07T12:37:05'
+    let dstr = dt.replace(' ', 'T');
+    const t = new Date(dstr);
+    if (isNaN(t)) return '-';
     const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-    const t = new Date(dt.replace(' ', 'T')); // Agar bisa di-parse di semua browser
     const hari = days[t.getDay()];
     const tgl = t.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const jam = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1171,6 +1175,7 @@ function formatLogDatetime(dt) {
 
 </body>
 </html>
+
 
 
 
