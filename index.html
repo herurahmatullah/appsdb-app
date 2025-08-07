@@ -514,7 +514,11 @@ function renderNotAvailable(menuTitle) {
     `;
 }
 
-    function renderLogTable() {
+let logs = [];         // data log global
+let logPage = 1;       // halaman aktif
+const logPerPage = 10; // data per halaman
+
+function renderLogTable() {
     document.getElementById('mainContent').innerHTML = `
         <div class="text-center text-2xl md:text-3xl font-bold text-gray-800 mb-4">Log Aktivitas</div>
         <div class="overflow-auto bg-white rounded-xl shadow">
@@ -531,29 +535,65 @@ function renderNotAvailable(menuTitle) {
                 <tbody id="logTableBody"></tbody>
             </table>
         </div>
+        <div id="logPagination" class="flex gap-1 mt-4 justify-center"></div>
     `;
-    // Fetch log data
-    fetch('https://appsdbherurahmatullah.my.id/log') // <-- ganti ke full URL jika pakai domain/api berbeda!
+
+    fetch('https://appsdbherurahmatullah.my.id/log')
         .then(res => res.json())
         .then(json => {
-            let logs = (json.data || []);
-            let rows = '';
-            logs.forEach((log, idx) => {
-                rows += `
-                    <tr class="border-b hover:bg-blue-50">
-                        <td class="px-3 py-2">${idx + 1}</td>
-                        <td class="px-3 py-2">${formatWaktuLog(log.waktu)}</td>
-                        <td class="px-3 py-2">${log.email}</td>
-                        <td class="px-3 py-2">${log.aksi}</td>
-                        <td class="px-3 py-2 whitespace-pre-line">${log.keterangan || '-'}</td>
-                    </tr>
-                `;
-            });
-            document.getElementById('logTableBody').innerHTML = rows || `<tr><td colspan="5" class="text-center text-gray-500">Belum ada data log</td></tr>`;
+            logs = (json.data || []);
+            renderLogTableBody();
+            renderLogPagination();
         })
         .catch(() => {
-            document.getElementById('logTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-red-500">Gagal mengambil data log</td></tr>`;
+            document.getElementById('logTableBody').innerHTML =
+                `<tr><td colspan="5" class="text-center text-red-500">Gagal mengambil data log</td></tr>`;
         });
+}
+
+function renderLogTableBody() {
+    const tableBody = document.getElementById('logTableBody');
+    const start = (logPage - 1) * logPerPage;
+    const end = start + logPerPage;
+    const pageData = logs.slice(start, end);
+    let rows = '';
+    pageData.forEach((log, idx) => {
+        rows += `
+            <tr class="border-b hover:bg-blue-50">
+                <td class="px-3 py-2">${start + idx + 1}</td>
+                <td class="px-3 py-2">${formatWaktuLog(log.waktu)}</td>
+                <td class="px-3 py-2">${log.email}</td>
+                <td class="px-3 py-2">${log.aksi}</td>
+                <td class="px-3 py-2 whitespace-pre-line">${log.keterangan || '-'}</td>
+            </tr>
+        `;
+    });
+    tableBody.innerHTML = rows || `<tr><td colspan="5" class="text-center text-gray-500">Belum ada data log</td></tr>`;
+}
+
+    function renderLogPagination() {
+    const totalPages = Math.ceil(logs.length / logPerPage);
+    const pagi = document.getElementById('logPagination');
+    pagi.innerHTML = '';
+
+    // Prev
+    pagi.innerHTML += `<button ${logPage === 1 ? 'disabled' : ''}
+        onclick="logPage--;renderLogTableBody();renderLogPagination();"
+        class="px-2 py-1 rounded ${logPage === 1 ? 'bg-gray-200 text-gray-400' : 'bg-blue-600 text-white'}"
+    >Prev</button>`;
+
+    // Nomor halaman
+    for (let i = 1; i <= totalPages; i++) {
+        pagi.innerHTML += `<button onclick="logPage=${i};renderLogTableBody();renderLogPagination();"
+            class="px-2 py-1 rounded mx-1 ${logPage === i ? 'bg-blue-700 text-white font-bold' : 'bg-gray-100'}"
+        >${i}</button>`;
+    }
+
+    // Next
+    pagi.innerHTML += `<button ${logPage === totalPages ? 'disabled' : ''}
+        onclick="logPage++;renderLogTableBody();renderLogPagination();"
+        class="px-2 py-1 rounded ${logPage === totalPages ? 'bg-gray-200 text-gray-400' : 'bg-blue-600 text-white'}"
+    >Next</button>`;
 }
 
 function renderPengaturan(selected = '') {
@@ -1186,6 +1226,7 @@ function formatWaktuLog(waktuStr) {
 
 </body>
 </html>
+
 
 
 
