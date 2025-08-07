@@ -542,7 +542,7 @@ function renderNotAvailable(menuTitle) {
                 rows += `
                     <tr class="border-b hover:bg-blue-50">
                         <td class="px-3 py-2">${idx + 1}</td>
-                        <td class="px-3 py-2">${formatLogTimeWIB(row.waktu)}</td>
+                        <td class="px-3 py-2">${formatWaktuLog(row.waktu)}</td>
                         <td class="px-3 py-2">${log.email}</td>
                         <td class="px-3 py-2">${log.aksi}</td>
                         <td class="px-3 py-2 whitespace-pre-line">${log.keterangan || '-'}</td>
@@ -1158,39 +1158,35 @@ function logoutUser() {
 </script>
 
 <script>
-function formatLogTimeWIB(str) {
-    if (!str) return '-';
-    // Buat objek date dari string GMT yang diberikan
-    const date = new Date(str);
+function formatWaktuLog(waktuStr) {
+    // Buat objek Date dari string
+    const d = new Date(waktuStr);
+    if (isNaN(d)) return '-'; // jika tidak valid
 
-    // Pastikan tanggal valid
-    if (isNaN(date.getTime())) return '-';
-
-    // Offset timezone WIB (UTC+7)
-    const wibDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
-
-    // Hari dalam bahasa Indonesia (full)
-    const days = [
-        "Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
+    // Hari dalam Bahasa Indonesia
+    const hariArr = [
+        'Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
     ];
-    const hari = days[wibDate.getDay()];
+    const hari = hariArr[d.getDay()];
 
-    // Tanggal: dd-MM-yyyy
-    const dd = String(wibDate.getDate()).padStart(2, '0');
-    const mm = String(wibDate.getMonth() + 1).padStart(2, '0'); // bulan mulai dari 0
-    const yyyy = wibDate.getFullYear();
+    // Tanggal format dd-MM-yyyy
+    const tgl = d.getDate().toString().padStart(2, '0');
+    const bln = (d.getMonth() + 1).toString().padStart(2, '0');
+    const thn = d.getFullYear();
 
-    // Jam: hh:mm:ss
-    const jam = wibDate.toTimeString().slice(0, 8);
+    // Jam format 24 jam
+    const jam = d.getHours().toString().padStart(2, '0');
+    const menit = d.getMinutes().toString().padStart(2, '0');
+    const detik = d.getSeconds().toString().padStart(2, '0');
 
-    // Gabungkan hasil
-    return `${hari}, ${dd}-${mm}-${yyyy} ${jam}`;
+    return `${hari}, ${tgl}-${bln}-${thn} ${jam}:${menit}:${detik}`;
 }
 
 </script>
 
 </body>
 </html>
+
 
 
 
