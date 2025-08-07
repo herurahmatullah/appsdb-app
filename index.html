@@ -1052,11 +1052,19 @@ document.getElementById("loginForm").addEventListener("submit", function(event){
 
 // Menangani proses logout
 function logoutUser() {
-    loginUserState = null;
-    document.getElementById('email').value = '';
-    document.getElementById('password').value = '';
-    showPage('login');
+    // Kirim log logout ke backend
+    fetch('https://appsdbherurahmatullah.my.id/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginUserState?.email })
+    }).finally(() => {
+        loginUserState = null;
+        document.getElementById('email').value = '';
+        document.getElementById('password').value = '';
+        showPage('login');
+    });
 }
+
 </script>
     
     <!-- ...Akhir halaman sebelum </body> -->
@@ -1150,5 +1158,6 @@ function logoutUser() {
 
 </body>
 </html>
+
 
 
