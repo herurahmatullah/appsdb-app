@@ -542,7 +542,7 @@ function renderNotAvailable(menuTitle) {
                 rows += `
                     <tr class="border-b hover:bg-blue-50">
                         <td class="px-3 py-2">${idx + 1}</td>
-                        <td class="px-3 py-2">${log.waktu ? log.waktu.replace('T',' ').slice(0,19) : ''}</td>
+                        <td class="px-3 py-2">${formatLogDatetime(log.waktu)}</td>
                         <td class="px-3 py-2">${log.email}</td>
                         <td class="px-3 py-2">${log.aksi}</td>
                         <td class="px-3 py-2 whitespace-pre-line">${log.keterangan || '-'}</td>
@@ -1154,10 +1154,22 @@ function logoutUser() {
         updateDateTime();
         setInterval(updateDateTime, 1000);
     }
+
+    function formatLogDatetime(dt) {
+    if (!dt) return '';
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const t = new Date(dt.replace(' ', 'T')); // Agar bisa di-parse di semua browser
+    const hari = days[t.getDay()];
+    const tgl = t.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const jam = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return `${hari}, ${tgl} ${jam}`;
+}
+
 </script>
 
 </body>
 </html>
+
 
 
 
