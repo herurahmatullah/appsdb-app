@@ -1154,8 +1154,11 @@ function logoutUser() {
         updateDateTime();
         setInterval(updateDateTime, 1000);
     }
+    
+</script>
 
-    function formatLogDatetime(dt) {
+<script>
+function formatLogDatetime(dt) {
     if (!dt) return '';
     const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
     const t = new Date(dt.replace(' ', 'T')); // Agar bisa di-parse di semua browser
@@ -1164,11 +1167,11 @@ function logoutUser() {
     const jam = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     return `${hari}, ${tgl} ${jam}`;
 }
-
 </script>
 
 </body>
 </html>
+
 
 
 
