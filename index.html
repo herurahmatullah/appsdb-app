@@ -514,6 +514,48 @@ function renderNotAvailable(menuTitle) {
     `;
 }
 
+    function renderLogTable() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="text-center text-2xl md:text-3xl font-bold text-gray-800 mb-4">Log Aktivitas</div>
+        <div class="overflow-auto bg-white rounded-xl shadow">
+            <table class="min-w-full text-sm text-left">
+                <thead>
+                    <tr class="bg-blue-50 border-b">
+                        <th class="px-3 py-2">No.</th>
+                        <th class="px-3 py-2">Waktu</th>
+                        <th class="px-3 py-2">Email</th>
+                        <th class="px-3 py-2">Aksi</th>
+                        <th class="px-3 py-2">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+        </div>
+    `;
+    // Fetch log data
+    fetch('https://appsdbherurahmatullah.my.id/log') // <-- ganti ke full URL jika pakai domain/api berbeda!
+        .then(res => res.json())
+        .then(json => {
+            let logs = (json.data || []);
+            let rows = '';
+            logs.forEach((log, idx) => {
+                rows += `
+                    <tr class="border-b hover:bg-blue-50">
+                        <td class="px-3 py-2">${idx + 1}</td>
+                        <td class="px-3 py-2">${log.waktu ? log.waktu.replace('T',' ').slice(0,19) : ''}</td>
+                        <td class="px-3 py-2">${log.email}</td>
+                        <td class="px-3 py-2">${log.aksi}</td>
+                        <td class="px-3 py-2 whitespace-pre-line">${log.keterangan || '-'}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('logTableBody').innerHTML = rows || `<tr><td colspan="5" class="text-center text-gray-500">Belum ada data log</td></tr>`;
+        })
+        .catch(() => {
+            document.getElementById('logTableBody').innerHTML = `<tr><td colspan="5" class="text-center text-red-500">Gagal mengambil data log</td></tr>`;
+        });
+}
+
 function renderPengaturan(selected = '') {
     // Jika klik "Pengaturan" utama
     if (selected === '') {
@@ -867,12 +909,14 @@ document.querySelectorAll('#mainMenu a').forEach(link => {
             renderDashboardBox();
         } else if (menu === 'asn') {
             renderDataASN();
+        } else if (menu === 'log') {
+            renderLogTable();           // <--- TAMBAHKAN INI!
         } else if (menu === 'pengaturan') {
             renderPengaturan(); // default ke akses menu
         } else {
             let titles = {
                 pns: 'Data PNS', cpns: 'Data CPNS', pppk: 'Data PPPK', pangkat: 'Data Pangkat',
-                gaji: 'Data Gaji Berkala', mutasi: 'Data Mutasi', pensiun: 'Data Pensiun', log: 'Log'
+                gaji: 'Data Gaji Berkala', mutasi: 'Data Mutasi', pensiun: 'Data Pensiun'
             };
             renderNotAvailable(titles[menu] || 'Fitur');
         }
@@ -1106,3 +1150,4 @@ function logoutUser() {
 
 </body>
 </html>
+
